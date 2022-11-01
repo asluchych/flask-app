@@ -1,6 +1,6 @@
 import os
-
 basedir = os.path.abspath(os.path.dirname(__file__))
+
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'ekaterinashulman'
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
@@ -37,9 +37,9 @@ class ProductionConfig(Config):
         'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 
 config = {
-    'development' : DevelopmentConfig,
-    'testing' : TestingConfig,
-    'production' : ProductionConfig,
+    'development': DevelopmentConfig,
+    'testing': TestingConfig,
+    'production': ProductionConfig,
 
-    'default' : DevelopmentConfig
+    'default': DevelopmentConfig
 }

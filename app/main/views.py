@@ -1,10 +1,10 @@
-from datetime import datetime
 from flask import render_template, session, redirect, url_for, curent_app
 from . import main
 from .forms import NameForm
 from .. import db
 from ..models import User
-from ..email import send_mail
+from ..email import send_email
+
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
