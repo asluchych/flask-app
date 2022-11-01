@@ -10,21 +10,8 @@ from flask_migrate import Migrate
 from flask_mail import Mail, Message
 from threading import Thread
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'ekaterinashulman'
-app.config['SQLALCHEMY_DATABASE_URI'] = \
-    'sqlite:///' + os.path.join(basedir, 'data.sqlite')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[Flasky]'
-app.config['FLASKY_MAIL_SENDER'] = 'Flasky Admin <lucaswnklr@gmail.com>'
-app.config['FLASKY_ADMIN'] = os.environ.get('FLASKY_ADMIN')
+
 
 bootstrap = Bootstrap(app)
 moment = Moment(app)
