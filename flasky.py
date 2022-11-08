@@ -1,3 +1,6 @@
+# flask db migrate -m 'initial migration'
+# flask db upgrade
+
 import os
 import click
 from flask_migrate import Migrate
