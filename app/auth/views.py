@@ -4,7 +4,8 @@ from . import auth
 from ..models import User
 from .forms import LoginForm
 
-@auth.route('/login', methods = ['GET', 'POST'])
+
+@auth.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -18,7 +19,8 @@ def login():
         flash('Invalid email or password.')
     return render_template('auth/login.html', form=form)
 
-@app.route('/logout')
+
+@auth.route('/logout')
 @login_required
 def logout():
     logout_user()
