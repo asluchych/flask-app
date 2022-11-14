@@ -114,7 +114,7 @@ class UserModelTestCase(unittest.TestCase):
 
     def test_moderator_role(self):
         r = Role.query.filter_by(name='Moderator').first()
-        u = User(email='john@example.com', password = 'cat', role=r)
+        u = User(email='john@example.com', password='cat', role=r)
         self.assertTrue(u.can(Permission.FOLLOW))
         self.assertTrue(u.can(Permission.COMMENT))
         self.assertTrue(u.can(Permission.WRITE))
@@ -131,7 +131,7 @@ class UserModelTestCase(unittest.TestCase):
         self.assertTrue(u.can(Permission.ADMIN))
 
     def test_anonymous_user(self):
-        u = AnonymousUser
+        u = AnonymousUser()
         self.assertFalse(u.can(Permission.FOLLOW))
         self.assertFalse(u.can(Permission.COMMENT))
         self.assertFalse(u.can(Permission.WRITE))

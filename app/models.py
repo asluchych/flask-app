@@ -30,8 +30,10 @@ class Role(db.Model):
     def insert_roles():
         roles = {
             'User': [Permission.FOLLOW, Permission.COMMENT, Permission.WRITE],
-            'Moderator': [Permission.FOLLOW, Permission.COMMENT, Permission.WRITE, Permission.MODERATE],
-            'Administrator': [Permission.FOLLOW, Permission.COMMENT, Permission.WRITE, Permission.MODERATE,
+            'Moderator': [Permission.FOLLOW, Permission.COMMENT,
+                          Permission.WRITE, Permission.MODERATE],
+            'Administrator': [Permission.FOLLOW, Permission.COMMENT,
+                              Permission.WRITE, Permission.MODERATE,
                               Permission.ADMIN],
         }
         default_role = 'User'
@@ -84,6 +86,7 @@ class User(UserMixin, db.Model):
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
+
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -124,9 +127,11 @@ class User(UserMixin, db.Model):
         user.password = new_password
         db.session.add(user)
         return True
+
     def generate_email_change_token(self, new_email, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'change_email': self.id, 'new_email': new_email}).decode('utf-8')
+        return s.dumps(
+            {'change_email': self.id, 'new_email': new_email}).decode('utf-8')
 
     def change_email(self, token):
         s = Serializer(current_app.config['SECRET_KEY'])
