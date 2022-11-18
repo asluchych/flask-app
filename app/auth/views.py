@@ -7,6 +7,7 @@ from ..email import send_email
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm, \
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm
 
+
 @auth.before_app_request
 def before_request():
     if current_user.is_authenticated:
@@ -16,6 +17,7 @@ def before_request():
                 and request.blueprint != 'auth' \
                 and request.endpoint != 'static':
             return redirect(url_for('auth.unconfirmed'))
+
 
 @auth.route('/unconfirmed')
 def unconfirmed():
@@ -62,6 +64,7 @@ def register():
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', form=form)
 
+
 @auth.route('/confirm/<token>')
 @login_required
 def confirm(token):
@@ -74,6 +77,7 @@ def confirm(token):
         flash('The confirmation link is invalid or has expired.')
     return redirect(url_for('main.index'))
 
+
 @auth.route('/confirm')
 @login_required
 def resend_confirmation():
@@ -83,7 +87,7 @@ def resend_confirmation():
     return redirect(url_for('main.index'))
 
 
-@auth.route('/change-password', methods = ['GET', 'POST'])
+@auth.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
     form = ChangePasswordForm()
@@ -97,6 +101,7 @@ def change_password():
         else:
             flash('Invalid password.')
     return render_template('auth/change_password.html', form=form)
+
 
 @auth.route('/reset', methods=['GET', 'POST'])
 def password_reset_request():
@@ -134,7 +139,7 @@ def change_email_request():
     form = ChangeEmailForm()
     if form.validate_on_submit():
         if current_user.verify_password(form.password.data):
-            new_email  = form.email.data.lower()
+            new_email = form.email.data.lower()
             token = current_user.generate_email_change_token(new_email)
             send_email(new_email, 'Confirm your email address', 'auth/email/change_email',
                        user=current_user, token=token)
@@ -154,4 +159,3 @@ def change_email(token):
     else:
         flash('Invalid request.')
     return redirect(url_for('main.index'))
-
