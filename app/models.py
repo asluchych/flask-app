@@ -84,7 +84,6 @@ class User(UserMixin, db.Model):
     avatar_hash = db.Column(db.String(32))
     posts = db.relationship('Post', backref='author', lazy='dynamic')
 
-
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
@@ -172,7 +171,6 @@ class User(UserMixin, db.Model):
     def ping(self):
         self.last_seen = datetime.utcnow()
         db.session.add(self)
-        db.session.commit()
 
     def gravatar_hash(self):
         return hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
@@ -194,8 +192,8 @@ class AnonymousUser(AnonymousUserMixin):
     def is_administrator(self):
         return False
 
-
 login_manager.anonymous_user = AnonymousUser
+
 
 @login_manager.user_loader
 def load_user(user_id):
