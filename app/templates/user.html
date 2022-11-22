@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "_macros.html" as macros %}
 
 {% block title %}Flasky - {{ user.username }}{% endblock %}
 
@@ -9,9 +10,9 @@
         <h1>{{ user.username }}</h1>
         {% if user.name or user.location %}
         <p>
-            {% if user.name %}{{ user.name }}{% endif %}
+            {% if user.name %}{{ user.name }}<br>{% endif %}
             {% if user.location %}
-                from <a href="http://maps.google.com/?q={{ user.location }}">{{ user.location }}</a>
+                from <a href="http://maps.google.com/?q={{ user.location }}">{{ user.location }}</a><br>
             {% endif %}
         </p>
         {% endif %}
@@ -33,4 +34,9 @@
 </div>
 <h3>Posts by {{ user.username }}</h3>
 {% include '_posts.html' %}
+{% if pagination %}
+<div class="pagination">
+    {{ macros.pagination_widget(pagination, '.user', username=user.username) }}
+</div>
+{% endif %}
 {% endblock %}
