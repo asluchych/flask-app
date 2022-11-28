@@ -4,6 +4,7 @@ from ..models import Post, Permission, Comment
 from . import api
 from .decorators import permission_required
 
+
 @api.route('/comments/')
 def get_comments():
     page = request.args.get('page', 1, type=int)
@@ -23,10 +24,12 @@ def get_comments():
         'count': pagination.total
     })
 
+
 @api.route('/comments/<int:id>')
 def get_comment(id):
     comment = Comment.query.get_or_404(id)
     return jsonify(comment.to_json())
+
 
 @api.route('/posts/<int:id>/comments/')
 def get_post_comments(id):
@@ -47,6 +50,7 @@ def get_post_comments(id):
         'next': next,
         'count': pagination.total
     })
+
 
 @api.route('/posts/<ind:id>/comments/', methods=['POST'])
 @permission_required(Permission.COMMENT)
