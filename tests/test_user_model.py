@@ -184,12 +184,12 @@ class UserModelTestCase(unittest.TestCase):
         self.assertFalse(u1.is_followed_by(u2))
         self.assertTrue(u2.is_followed_by(u1))
         self.assertTrue(u1.followed.count() == 2)
-        self.assertTrue(u1.followers.count() == 2)
+        self.assertTrue(u2.followers.count() == 2)
         f = u1.followed.all()[-1]
         self.assertTrue(f.followed == u2)
         self.assertTrue(timestamp_before <= f.timestamp <= timestamp_after)
         f = u2.followers.all()[-1]
-        self.assertTrue(f.follower == 1)
+        self.assertTrue(f.follower == u1)
         u1.unfollow(u2)
         db.session.add(u1)
         db.session.commit()
@@ -202,7 +202,7 @@ class UserModelTestCase(unittest.TestCase):
         db.session.commit()
         db.session.delete(u2)
         db.session.commit()
-        self.assertTrue(Follow.query.count() == 0)
+        self.assertTrue(Follow.query.count() == 1)
 
     def test_to_json(self):
         u = User(email='john@example.com', password = 'cat')
@@ -213,6 +213,4 @@ class UserModelTestCase(unittest.TestCase):
         expected_keys = ['url', 'username', 'member_since', 'last_seen',
                          'posts_url', 'followed_posts_url', 'post_count']
         self.assertEqual(sorted(json_user.keys()), sorted(expected_keys))
-        self.assertEqual('api/v1/users' + str(u.id), json_user['url'])
-
-
+        self.assertEqual('/api/v1/users/' + str(u.id), json_user['url'])
