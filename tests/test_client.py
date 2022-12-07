@@ -31,3 +31,25 @@ class FlaskClientTestCase(unittest.TestCase):
             'password2': 'cat'
         })
         self.assertEqual(response.status_code, 302)
+
+        # login with the new account
+        response = self.client.post('/auth/login', data={
+            'email': 'john@example.com',
+            'password': 'cat'
+        }, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(re.search(b'Hello,\s+john!', response.data))
+        self.assertTrue(b'You have not confirmed your account yet' in response.data)
+
+        # send a confirmation token
+        user = User.query.filter_by(email='john@example.com').first()
+        token = user.generate_confirmation_token()
+        response = self.client.get('/auth/confirm/{}'.format(token), follow_redirects=True)
+        user.confirm(token)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(b'You have not confirmed your account' in response.data)
+
+        # log out
+        response = self.client.get('/auth/logout', follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(b'You have been logged out' in response.data)
