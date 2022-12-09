@@ -29,7 +29,7 @@ class APITestCase(unittest.TestCase):
 
     def test_404(self):
         response = self.client.get(
-            '/wrong/url', headers=self.get_api_headers('email', 'password'))
+            '/wrong/url', headers=self.get_api_header('email', 'password'))
         self.assertEqual(response.status_code, 404)
         json_response = json.loads(response.get_data(as_text=True))
         self.assertEqual(json_response['error'], 'not found')
@@ -48,7 +48,7 @@ class APITestCase(unittest.TestCase):
 
         # autenticate with bad password
         response = self.client.get('/api/v1/posts/',
-                                   headers=self.get_api_headers('john@example.com', 'dog'))
+                                   headers=self.get_api_header('john@example.com', 'dog'))
         self.assertEqual(response.status_code, 401)
 
     def test_token_auth(self):
@@ -61,22 +61,22 @@ class APITestCase(unittest.TestCase):
 
         # issue a request with a bad token
         response = self.client.get(
-            '/api/v1/posts/', headers=self.get_api_headers('bad-token',''))
+            '/api/v1/posts/', headers=self.get_api_header('bad-token',''))
         self.assertEqual(response.status_code, 401)
 
         # get a token
-        response = self.client.post('/api/v1/tokens/', headers=self.get_api_headers('john@example.com', 'cat'))
+        response = self.client.post('/api/v1/tokens/', headers=self.get_api_header('john@example.com', 'cat'))
         self.assertEqual(response.status_code, 200)
         json_response = json.loads(response.get_data(as_text=True))
         self.assertIsNotNone(json_response.get('token'))
         token = json_response['token']
 
         # issue a request with the token
-        response = self.client.get('/api/v1/posts', headers=self.get_api_headers(token, ''))
+        response = self.client.get('/api/v1/posts/', headers=self.get_api_header(token, ''))
         self.assertEqual(response.status_code, 200)
 
-    def test_anonnymous(self):
-        response = self.client.get('/api/v1/posts/', headers=self.get_api_headers('', ''))
+    def test_anonymous(self):
+        response = self.client.get('/api/v1/posts/', headers=self.get_api_header('', ''))
         self.assertEqual(response.status_code, 401)
 
     def test_unconfirmed_account(self):
@@ -88,7 +88,7 @@ class APITestCase(unittest.TestCase):
         db.session.commit()
 
         # get list of posts with the unconfirmed account
-        response = self.client.get('/api/v1/posts/', headers=self.get_api_headers('john@example.com', 'cat'))
+        response = self.client.get('/api/v1/posts/', headers=self.get_api_header('john@example.com', 'cat'))
         self.assertEqual(response.status_code, 403)
 
     def test_posts(self):
@@ -100,24 +100,31 @@ class APITestCase(unittest.TestCase):
         db.session.commit()
 
         # write an empty post
-        response = self.client.post('/api/v1/posts', headers=self.get_api_headers('john@example.com', 'cat'),
+        response = self.client.post(
+            '/api/v1/posts/',
+            headers=self.get_api_header('john@example.com', 'cat'),
+            data=json.dumps({'body': ''}))
+        self.assertEqual(response.status_code, 400)
+
+        # write a post
+        response = self.client.post('/api/v1/posts/', headers=self.get_api_header('john@example.com', 'cat'),
                                     data=json.dumps({'body': 'body of the *blog* post'}))
         self.assertEqual(response.status_code, 201)
         url = response.headers.get('Location')
         self.assertIsNotNone(url)
 
         # get the new post
-        response = self.client.get(url, headers=self.get_api_headers('john@example.com', 'cat'))
+        response = self.client.get(url, headers=self.get_api_header('john@example.com', 'cat'))
         self.assertEqual(response.status_code, 200)
         json_response = json.loads(response.get_data(as_text=True))
-        self.assertEqual('http://localhost' + json_response['url'], url)
+        self.assertEqual(json_response['url'], url)
         self.assertEqual(json_response['body'], 'body of the *blog* post')
         self.assertEqual(json_response['body_html'], '<p>body of the <em>blog</em> post</p>')
         json_post = json_response
 
         # get the post from the user
-        response = self.cleint.get('/api/v1/users/{}/posts/'.format(u.id),
-                                   headers=self.get_api_headers('john@example.com', 'cat'))
+        response = self.client.get('/api/v1/users/{}/posts/'.format(u.id),
+                                   headers=self.get_api_header('john@example.com', 'cat'))
         self.assertEqual(response.status_code, 200)
         json_response = json.loads(response.get_data(as_text=True))
         self.assertIsNotNone(json_response.get('posts'))
@@ -125,8 +132,8 @@ class APITestCase(unittest.TestCase):
         self.assertEqual(json_response['posts'][0], json_post)
 
         # get the post from the user as a follower
-        response = self.client.get('/api/v1/users/{}/timeline'.format(u.id),
-                                   headers=self.get_api_headers('john@example.com', 'cat'))
+        response = self.client.get('/api/v1/users/{}/timeline/'.format(u.id),
+                                   headers=self.get_api_header('john@example.com', 'cat'))
         self.assertEqual(response.status_code, 200)
         json_response = json.loads(response.get_data(as_text=True))
         self.assertIsNotNone(json_response.get('posts'))
@@ -136,12 +143,12 @@ class APITestCase(unittest.TestCase):
         # edit post
         response = self.client.put(
             url,
-            headers=self.get_api_headers('john@example.com', 'cat'),
+            headers=self.get_api_header('john@example.com', 'cat'),
             data = json.dumps({'body': 'updated body'}))
         self.assertEqual(response.status_code, 200)
         json_response = json.loads(response.get_data(as_text=True))
-        self.assertEqual('http://localhost' + json_response['url'], url)
-        self.assertEqual(json_response['body'], 'updated_body')
+        self.assertEqual(json_response['url'], url)
+        self.assertEqual(json_response['body'], 'updated body')
         self.assertEqual(json_response['body_html'], '<p>updated body</p>')
 
     def test_users(self):
@@ -150,19 +157,19 @@ class APITestCase(unittest.TestCase):
         self.assertIsNotNone(r)
         u1 = User(email='john@example.com', username='john',
                   password='cat', confirmed=True, role=r)
-        u2 = User(emai='susan@example.com', username='susan',
+        u2 = User(email='susan@example.com', username='susan',
                   password='dog', confirmed=True, role=r)
         db.session.add_all([u1, u2])
         db.session.commit()
 
         # get users
-        response = self.client.get('/api/v1/users{}'.format(u1.id),
-                                   headers=self.get_api_headers('susan@example.com', 'dog'))
+        response = self.client.get('/api/v1/users/{}'.format(u1.id),
+                                   headers=self.get_api_header('susan@example.com', 'dog'))
         self.assertEqual(response.status_code, 200)
         json_response = json.loads(response.get_data(as_text=True))
         self.assertEqual(json_response['username'], 'john')
         response = self.client.get('/api/v1/users/{}'.format(u2.id),
-                                   headers=self.get_api_headers('susan@example.com', 'dog'))
+                                   headers=self.get_api_header('susan@example.com', 'dog'))
         self.assertEqual(response.status_code, 200)
         json_response = json.loads(response.get_data(as_text=True))
         self.assertEqual(json_response['username'], 'susan')
@@ -173,7 +180,7 @@ class APITestCase(unittest.TestCase):
         self.assertIsNotNone(r)
         u1 = User(email='john@example.com', username='john',
                   password='cat', confirmed=True, role=r)
-        u2 = User(emai='susan@example.com', username='susan',
+        u2 = User(email='susan@example.com', username='susan',
                   password='dog', confirmed=True, role=r)
         db.session.add_all([u1, u2])
         db.session.commit()
@@ -186,21 +193,21 @@ class APITestCase(unittest.TestCase):
         # write a comment
         response = self.client.post(
             '/api/v1/posts/{}/comments/'.format(post.id),
-            headers=self.get_api_headers('susan@example.com' 'dog'),
+            headers=self.get_api_header('susan@example.com', 'dog'),
             data=json.dumps({'body': 'Good [post](http://example.com)!'}))
         self.assertEqual(response.status_code, 201)
         json_response = json.loads(response.get_data(as_text=True))
         url = response.headers.get('Location')
         self.assertIsNotNone(url)
         self.assertEqual(json_response['body'],
-                         'Good [post](http://exampl.com)!')
+                         'Good [post](http://example.com)!')
         self.assertEqual(re.sub('<.*?>', '', json_response['body_html']), 'Good post!')
 
         # get the new comment
-        response = self.client.get(url, headers=self.get_api_headers('john@example.com', 'cat'))
+        response = self.client.get(url, headers=self.get_api_header('john@example.com', 'cat'))
         self.assertEqual(response.status_code, 200)
         json_response = json.loads(response.get_data(as_text=True))
-        self.assertEqual('http://localhost' + json_response['url'], url)
+        self.assertEqual(json_response['url'], url)
         self.assertEqual(json_response['body'], 'Good [post](http://example.com)!')
 
         # add another comment
@@ -210,7 +217,7 @@ class APITestCase(unittest.TestCase):
         
         # get the two comments from the post
         response = self.client.get('/api/v1/posts/{}/comments/'.format(post.id),
-                                   headers=self.get_api_headers('susan@example.com', 'dog'))
+                                   headers=self.get_api_header('susan@example.com', 'dog'))
         self.assertEqual(response.status_code, 200)
         json_response = json.loads(response.get_data(as_text=True))
         self.assertIsNotNone(json_response.get('comments'))
@@ -219,7 +226,7 @@ class APITestCase(unittest.TestCase):
         # get all the comments
         repsonse = self.client.get(
             '/api/v1/posts/{}/comments/'.format(post.id),
-            headers=self.get_api_headers('susan@example.com', 'dog'))
+            headers=self.get_api_header('susan@example.com', 'dog'))
         self.assertEqual(response.status_code, 200)
         json_response = json.loads(response.get_data(as_text=True))
         self.assertIsNotNone(json_response.get('comments'))
