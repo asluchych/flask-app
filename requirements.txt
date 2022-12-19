@@ -1,0 +1,3 @@
+# this requirements file is used by Render
+# requirements for other configurations are located in the requirements subdirectory
+-r requirements/render.txt

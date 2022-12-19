@@ -13,6 +13,7 @@ class Config:
     FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
     FLASKY_MAIL_SENDER = 'Flasky Admin <lucaswnklr@gmail.com>'
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
+    SSL_REDIRECT = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = True
     FLASKY_POSTS_PER_PAGE = 20
@@ -43,7 +44,7 @@ class ProductionConfig(Config):
         'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 
     @classmethod
-    def init_app(clsm, app):
+    def init_app(cls, app):
         Config.init_app(app)
 
         # email errors to the administrators
