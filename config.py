@@ -83,7 +83,7 @@ config = {
     'development': DevelopmentConfig,
     'testing': TestingConfig,
     'production': ProductionConfig,
-    'docher': DockerConfig,
+    'docker': DockerConfig,
 
     'default': DevelopmentConfig
 }
